@@ -11,6 +11,11 @@
 
 
 
+
+
+
+
+
 <!-- BEGIN STICKY SIDE NAV -->
 <div style="margine-top:0%; padding-top: 0%;" class="sidenav">
   <img width="100%" src="images/titanic_vector.png" />
@@ -27,8 +32,29 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 <!-- BEGIN TITLE -->
 <div class="main">
+
+<!--BEGIN ALERT BOX-->
+<div class="alert">
+  <span class="closebtn">&times;</span>  
+  <strong>Warning!</strong> Formatted to be viewed on full screen browsers only.
+</div>
+<!--END ALERT BOX-->
+
+
 <div class="bgimg-1">
   <div class="caption">
   <span class="title">TITANIC MORTALITY ANALYSIS</span><br>
@@ -37,6 +63,15 @@
   </div>
 </div>
 <!-- END TITLE -->
+
+
+
+
+
+
+
+
+
 
 
 
@@ -58,7 +93,7 @@ The problem statement will be addressed using techniques and tools that can be f
 
 <!-- BEGIN REQUIRED PACKAGES -->
   <h3 class="underline" style="text-align:center;" id="packages">Required Packages</h3>
-  <p>The majority of work can be done using Base-R. Other libraries will be added for data manipulation and visualization. Data manipulation is needed for data exploration and will include the dplyr and tidyverse libraries. Data visualization is needed to gain insights from the data that would not otherwise have been clear using other tools. These libraries include ggplot2, gapminder, and RColorBrewer. Ggplot2 is a powerful graphics language for creating elegant and complex plots. The idea is to provide the data and tell the function how to map variables to the aesthetics.</p>
+  <p>The majority of work can be done using Base-R. Other libraries will be added for data manipulation and visualization. Data manipulation is needed for data exploration and will include the dplyr and tidyverse libraries. Data visualization is needed to gain insights from the data that would not otherwise have been clear using other tools. These libraries include ggplot2, and RColorBrewer. Ggplot2 is a powerful graphics language for creating elegant and complex plots. The idea is to provide the data and tell the function how to map variables to the aesthetics.</p>
   
 </div>
 
@@ -70,7 +105,6 @@ library(tidyverse)
 
 # For Data Visualization
 library(ggplot2)
-library(gapminder)
 library(RColorBrewer)
 end.rcode-->
 
@@ -226,7 +260,8 @@ end.rcode-->
 
 
 <br>
-<br> <br> 
+<br> 
+<br>
 To gain familiarity with the titanic data frame, functons from tidyverse and dplyr will be used. Before diving into analysing the data, a few basic questions will need to be answered, such as 1) What are the column names? 2) What do the variables in the columns represent? 3) How large is this data frame? (How many observations) 4) Are there missing values or quirks in the collection that need to be addressed and cleaned?
 <br><br>
 
@@ -239,7 +274,7 @@ To gain familiarity with the titanic data frame, functons from tidyverse and dpl
 # Call colnames() function
 colnames(titanic)
 end.rcode-->
-<span style="color:#21597c; line-height:14px;">CONCLUSION: pclass, survived, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked, boat, body, home.dest </span>
+<span style="color:#21597c; line-height:14px;">CONCLUSION: pclass, survived, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked, boat, body, home.dest. From this list of column, the only factors we will be analyzing is pclass, sex, survived, and age.</span>
 </div> 
 <br><br>
 
@@ -264,7 +299,7 @@ str(titanic$survived)
 summary(titanic$age)
 
 end.rcode-->
-<span style="color:#21597c; line-height:14px;">CONCLUSION: The "pclass" column is represented by class 1, 2, and 3. The "sex" column is represented by male or female. The "survived" column is represented by either 0 (died) or 1 (survived). The "age" column represents passenger ages ranging from a couple of months to 80 years old.</span>
+<span style="color:#21597c; line-height:14px;">CONCLUSION: The "pclass" column is represented by class 1, 2, and 3. The "sex" column is represented by male or female. The "survived" column is represented by either 0 (died) or 1 (survived). The "age" column represents passenger ages ranging from a couple of months to 80 years old. </span>
 </div> 
 <br><br>
 
@@ -286,14 +321,13 @@ end.rcode-->
 <span style="color: black; font-weight: bold">4) Are there missing values or quirks in the collection that need to be addressed and cleaned?</span>
 
 <!--begin.rcode, warning = FALSE, message = FALSE
-# Begin heck for missing values
+# Begin check for missing values
 
 # Class values
 which(is.na(titanic$pclass))
 sum(is.na(titanic$pclass))
 
 # Age values
-which(is.na(titanic$age))
 sum(is.na(titanic$age))
 
 # Gender values
@@ -333,8 +367,8 @@ end.rcode-->
   <tr>
     <th>pclass</th>
     <th>survived</th> 
-    <th>age</th>
     <th>sex</th>
+    <th>age</th>
   </tr>
   <tr>
     <td>1</td>
@@ -441,7 +475,7 @@ end.rcode-->
   <div style="color:#777;background-color:#fff;text-align:center;padding:50px 80px;text-align: justify;">
   <h3 class="underline" style="text-align:center; color: #777;">Exploratory Data Analysis</h3>
   <p>The ultimate goal of the exploratory data analysis process is to determine the likelihood of survival among certain groups of passengers. For example, we should be able to determine if a young woman in first class has a better chance of survival than an older man in third class. In order to achieve this, first, the characteristics (class, sex, and age) will be compared to the survival column individually. Later, they will be compared to the survival column grouped together in various ways. Ggplot will be heavily used in this section to create data visualizations.<br>
-The first column that needs to be evaluated is the survival column without any other variables. To do this, a bar chart will be created using geom_bar() function.
+The first column that needs to be evaluated is the survival column without any other variables. To do this, a bar chart will be created using geom_bar() function. For plotting purposed, the 0 and 1 variables in the survived column will be changed to died or survived.
 </p>
   </div>
 
@@ -456,32 +490,40 @@ The first column that needs to be evaluated is the survival column without any o
 <!--BEGIN LEFT COLUMN-->
 <div style="width: 40%; margin-left:6%; background-color: #fff; color: #404040">
 <!--begin.rcode, warning = FALSE, message = FALSE, eval = FALSE
-
+# Mutate Survived Column
+titanic <- titanic %>% 
+  mutate(survived = ifelse(survived == 0, 
+                           "Died", 
+                           "Survived"))
 # Survival Amount
-titanic %>% 
-  ggplot(mapping = aes(x = survived)) + 
+ggplot(titanic, 
+       mapping = aes(x = survived)) + 
   geom_bar(width = .95, 
            position = "stack",
            fill = "#70ecc0") + 
   theme_light() +
-  labs(x = "Survived", 
+  labs(x = "", 
        y = "Number of People", 
        title = "Survival Amount") + 
   geom_text(stat = 'count',
             aes(label =..count..,
-                vjust = -0.2))+
-  scale_x_continuous(breaks = seq(0, 1, 1))
+                vjust = -0.2))
 end.rcode-->
 </div>
 <!--END LEFT COLUMN-->
+
+
+
 <!--BEGIN RIGHT COLUMN-->
-<div style="width: 40%; position: absolute; margin-left: 48%; margin-top: -32%;">
+<div style="width: 40%; position: absolute; margin-left: 48%; margin-top: -40%;">
 <img src="images/survival_amount.png" />
 </div>
 <!--END RIGHT COLUMN-->
 
+
+
 <div style="color:#777;background-color:#fff;text-align:center;padding:50px 80px;text-align: justify;">
-<p>After plotting the amount of passengers who died or survived, it is evident that more people had died than survived the crash. As shown in the plot, 619 passengers died while 427 survived. This means, without contributng any other variable, each passenger had about a 31 percent chance of surviving. The first variable that will individually be compare to the survival variable will be gender. This plot is similiar to the above with an added aesthetic to fill with the gender percentage. </p>
+<p>After plotting the amount of passengers who died or survived, it is evident that more people had died than survived the crash. As shown in the plot, 619 passengers died while 427 survived. This means, without contributng any other variable, each passenger had about a 40 percent chance of surviving. The first variable that will individually be compare to the survival variable will be gender. This plot is similiar to the above with an added aesthetic to fill with the gender percentage. </p>
 </div>
 <br>
 
@@ -500,11 +542,12 @@ end.rcode-->
 <!--begin.rcode, warning = FALSE, message = FALSE, eval = FALSE
 # Survival Distribution Among Gender
 titanic %>% 
-  ggplot(mapping = aes(x = survived, fill = sex)) + 
+  ggplot(mapping = aes(x = survived, 
+                       fill = sex)) + 
   geom_bar(width = .95, 
            position = "stack") + 
   theme_light()+ 
-  labs(x = "Survived", 
+  labs(x = "", 
        y = "Number of People", 
        title = "Gender Distribution Among Survival", 
        fill = "Gender") +
@@ -513,15 +556,15 @@ titanic %>%
   geom_text(stat = 'count',
             aes(label =..count..),
             position = position_stack(vjust = 0.5),
-            size = 5) +
-  scale_x_continuous(breaks = seq(0, 1, 1))
+            size = 5)
 end.rcode-->
 </div>
 <!--END RIGHT COLUMN-->
 <br><br>
 <!-- BEGIN SUMMARY PARAGRAPH -->
 <div style="color:#777;background-color:#fff;text-align:center;padding:50px 80px;text-align: justify;">
-<p>Conclusion of above findings and transition into below. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. </p>
+<p>By illustrating the relationship between the gender and survived column, it is evident that males had a much higher chance of passing away than females. Of the passengers who were male, 523 died while 123 survived. Of the passengers who were female, 96 died while 292 survived. Meaning, males had a 20.5 percent chance of survival compared to the 75.25 percent chance of survival that women had. <br>
+The relationship that will be illustrated next is survival and how it is distributed among age. The plot will be similiar to the gender plot, however, we will use the geom_density so any overlap can be seen. </p>
 </div>
 <!-- END SUMMARY PARAGRAPH -->
 
@@ -542,14 +585,14 @@ end.rcode-->
 titanic %>% 
   ggplot(aes(x = age, 
              fill = factor(survived))) +
-  geom_bar(width = 1, position = "identity") + 
+  geom_density(alpha = .8) + 
   theme_light() + 
   labs(x = "Age", 
        y = "Number of People", 
        fill = "Survived") + 
   ggtitle("Age Distribution Among Survival") +
-  scale_fill_manual(values = c("#70ecc0",
-                               "#21597c")) + 
+  scale_fill_manual(values = c("#21597c",
+                               "#70ecc0")) + 
   scale_x_continuous()
 
 end.rcode-->
@@ -558,13 +601,14 @@ end.rcode-->
 
 <!--BEGIN RIGHT COLUMN-->
 <div style="width: 40%; position: absolute; margin-left: 48%; margin-top: -32%;">
-<img src="images/age_distibution_among_survival.png" />
+<img src="images/age_distribution_among_survival.png" />
 </div>
 <!--END RIGHT COLUMN-->
 <br><br>
 <!-- BEGIN SUMMARY PARAGRAPH -->
 <div style="color:#777;background-color:#fff;text-align:center;padding:50px 80px;text-align: justify;">
-<p>Conclusion of above findings and transition into below. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. </p>
+<p>By illustrating the relationship between the age and survived column, it can be shown that there are only two age group where the amount of people survived exeeds the amount of people who passed away. Those approximate age groups are between 0 to 18 and 45 to 55. All other age groups have more passengers who passed away than survived. <br>
+The next relationship that will be established is the relationship between passengers who survived and their class. This can be done using a geom bar with the pclass column on the x-axis and filled with the survived column. </p>
 </div>
 <!-- END SUMMARY PARAGRAPH -->
 
@@ -597,7 +641,7 @@ titanic %>%
   labs(x = "Class", 
        y = "Number of People", 
        title = "Class Distribution Among Survival", 
-       fill = "Survived") +
+       fill = "") +
   scale_fill_manual(values = c("#70ecc0",
                                "#21597c"))
 end.rcode-->
@@ -605,16 +649,132 @@ end.rcode-->
 <!--END RIGHT COLUMN-->
 <!--BEGIN PARAGRAPH SUMMARY -->
 <div style="color:#777;background-color:#fff;text-align:center;padding:50px 80px;text-align: justify;">
-<p>Conclusion of above findings and transition into below. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. </p><br>
-
-<p> Uncover new information in the data that isn’t immediately apparent (such as: don’t just plot the data as is, but filter or group the data in different ways, create new variables, or join different data frames together to get new summaries)
-- Provide your findings in plots or tables. Display findings in different ways.
-- Graphs all have purpose and help tell your story. Make sure you have a graph that illustrates your primary point and that they are all appropriately formatted (plot and axis titles, legends if needed, appropriate plot types used)
-- Use tables effectively to perform comparisons, highlighting important features.
-- Your analysis should be thoroughly, yet concisely, explained. Make sure your insights and discoveries are highlighted, and easy to see and understand.  </p>
+<p>After creating a visualiation of the relationship between the class and survived column, it can be concluded that first class had the highest chance of surviving the crash. Second class had the second highest while the third class had the least chance of surviving the crash. <br>
+Now that the sex, age, and pclass columns have succefully been individually compared to the survived columns, the next step is to uncover new information in the data that isn’t immediately apparent. For simplicity, a new age_group category will be created to categorize the age group into four different groups; 0 to 18, 19 to 35, 36 to 60, and 61 and up. The overall goal is to determine the survival percentage for each groups of passengers. To do this, the sex, age_group, and pclass columns will be grouped together into one category column and then compared to the survived column. To create and group new columns, the pipe operator will be used with the mutate function. 
+</p>
 </div>
-<!--END PARAGRAPH SUMMARY -->
-<br>
+
+<!-- BEGIN TITANIC MUTATION CATEGORY -->
+<div style="width: 80%; margin-left:10%; background-color: #fff; color: #404040">
+<!--begin.rcode, warning = FALSE, message = FALSE, Eval = FALSE
+titanic <- titanic %>% 
+  mutate(age_group = ifelse(age >=0 & age < 19, "0 to 18",
+                            ifelse(age >=19 & age <= 35, "19 to 35",
+                            ifelse(age >=36 & age < 61, "36 to 60",
+                            ifelse(age >=61, "61 and Older", "no"))))) %>% 
+  mutate(category = ifelse(age_group == "0 to 18" & sex == "female" & pclass == 1, 
+                           "Female, 0 to 18, First Class",
+                           ifelse(age_group == "0 to 18" & sex == "female" & pclass == 2, 
+                                  "Female, 0 to 18, Second Class",
+                           ifelse(age_group == "0 to 18" & sex == "female" & pclass == 3, 
+                                  "Female, 0 to 18, Third Class",
+                           ifelse(age_group == "0 to 18" & sex == "male" & pclass == 1, 
+                                  "Male, 0 to 18, First Class",
+                           ifelse(age_group == "0 to 18" & sex == "male" & pclass == 2, 
+                                  "Male, 0 to 18, Second Class",
+                           ifelse(age_group == "0 to 18" & sex == "male" & pclass == 3, 
+                                  "Male, 0 to 18, Three Class",
+                           ifelse(age_group == "19 to 35" & sex == "female" & pclass == 1, 
+                                  "Female, 19 to 35, First Class",
+                           ifelse(age_group == "19 to 35" & sex == "female" & pclass == 2, 
+                                  "Female, 19 to 35, Second Class",
+                           ifelse(age_group == "19 to 35" & sex == "female" & pclass == 3, 
+                                  "Female, 19 to 35, Third Class",
+                           ifelse(age_group == "19 to 35" & sex == "male" & pclass == 1, 
+                                  "Male, 19 to 35, First Class",
+                           ifelse(age_group == "19 to 35" & sex == "male" & pclass == 2, 
+                                  "Male, 19 to 35, Second Class",
+                           ifelse(age_group == "19 to 35" & sex == "male" & pclass == 3, 
+                                  "Male, 19 to 35, Third Class",
+                           ifelse(age_group == "36 to 60" & sex == "female" & pclass == 1, 
+                                  "Female, 36 to 60, First Class",
+                           ifelse(age_group == "36 to 60" & sex == "female" & pclass == 2, 
+                                  "Female, 36 to 60, Second Class",
+                           ifelse(age_group == "36 to 60" & sex == "female" & pclass == 3, 
+                                  "Female, 36 to 60, Third Class",
+                           ifelse(age_group == "36 to 60" & sex == "male" & pclass == 1, 
+                                  "Male, 36 to 60, First Class",
+                           ifelse(age_group == "36 to 60" & sex == "male" & pclass == 2, 
+                                  "Male, 36 to 60, Second Class",
+                           ifelse(age_group == "36 to 60" & sex == "male" & pclass == 3, 
+                                  "Male, 36 to 60, Third Class",
+                           ifelse(age_group == "61 and Older" & sex == "female" & pclass == 1, 
+                                  "Female, 61 and Older, First Class",
+                           ifelse(age_group == "61 and Older" & sex == "female" & pclass == 2, 
+                                  "Female, 61 and Older, Second Class",
+                           ifelse(age_group == "61 and Older" & sex == "female" & pclass == 3, 
+                                  "Female, 61 and Older, Third Class",
+                           ifelse(age_group == "61 and Older" & sex == "male" & pclass == 1, 
+                                  "Female, 61 and Older, First Class",
+                           ifelse(age_group == "61 and Older" & sex == "male" & pclass == 2, 
+                                  "Female, 61 and Older, Second Class",
+                           ifelse(age_group == "61 and Older" & sex == "male" & pclass == 3, 
+                                  "Female, 61 and Older, Third Class", "No")))))))))))))))))))))))))
+
+end.rcode-->
+</div> 
+<!-- BEGIN TITANIC MUTATION CATEGORY -->
+
+
+
+
+
+
+
+
+
+
+<!-- BEGIN SUMMARY PARAGRAPH -->
+<div style="color:#777;background-color:#fff;text-align:center;padding:50px 80px;text-align: justify;">
+Now that new categories and groups have been created, ggplot can be used to illustrate the relationship between the new category column and the survived column. Since the goal is to determine the percentage of chance of survival among each category, a new column of percentages will be created. This new column will be calculated by count / sum(count). To plot, the categories will be on the y axis, percentage on the x axis, and filled with the survived column. To illustrate this relationship geom_bar will be used. 
+</div>
+<!-- END SUMMARY PARAGRAPH -->
+
+
+
+
+
+
+
+
+
+<!-- BEGIN TITANIC GGPLOT CATEGORY -->
+<div style="width: 70%; margin-left:15%; background-color: #fff; color: #404040">
+<!--begin.rcode, warning = FALSE, message = FALSE, eval = FALSE
+titanic <- titanic %>% 
+  group_by(category, survived) %>% 
+  summarise(count = n()) %>% 
+  mutate(perc = count / sum(count))
+
+
+ggplot(titanic, aes(y = factor(category), x = perc * 100, fill = factor(survived))) + 
+  geom_bar(stat = "identity", width = 0.95) +
+  labs(x = "Percent", 
+       y = "Gender, Age, Class Group",
+       fill = "") +
+  theme_light() +
+ theme(legend.position = "top") + 
+  scale_fill_manual(values = c("#70ecc0",
+                               "#21597c"))
+end.rcode-->
+</div> 
+<!-- END TITANIC GGPLOT CATEGORY -->
+
+
+
+
+
+
+
+
+
+<!--BEGIN IMAGE PLOT-->
+<div style="width: 80%; margin-left: 10%;">
+<img src="images/survival_by_category.png" />
+</div>
+<br><br>
+<!--END IMAGE PLOT-->
+</div>
 </div>
 
 <!------------END DATA EXPLORATION SECTION--------->
@@ -636,13 +796,109 @@ end.rcode-->
 
 <!------------BEGIN SUMMARY-------->
 <div id="summary" style="color: #fff;background-color:#404040;text-align:center;padding:50px 80px;text-align: justify;">
+
+<div style="margin-left: 15%">
   <h3 class="whiteUnderline" style="text-align:center; color: #fff;">Summary</h3>
-  <p>- Summarize the problem statement. 
-- Summarize how your addressed this problem statement
-- Summarize the interesting insights your analysis gave
-- Summarize the implications of your findings
-- Discuss the limitations of your findings and how you or someone else could improve upon it</p>
-<!------------END SUMMARY-------->
+  <p>
+  The Titanic estimated 2,224 people were on board the Titanic with over 1,500 people who perished. The purpose of this project was to analyze and explore the pattern of death and how it was distributed among class, gender, and age aboard the Titanic. Relationships between certain variables and death rates were established and visualizations were produced to illustrate them. The problem statement was addressed using techniques and tools that were found in the R language and its library packages. <br>
+Before the data exploration began, it was hypothesised that women, children, and first class passngers would get priority over older, male, third class passengers. This hypothesis proved to be true as can be seen with the table below which is ranked 1 to 21. The highest survival rate being 1 and the lowest being 21.<br><br>
+
+<!------------BEGIN CONSLUSION TABLE------->
+<span style="color: #fff; font-weight: bold">Survival distribution among categories. Ranked 1 (highest survival percentage) to 21 (lowest survival percentage).</span>
+<table id="t01" style="">
+  <tr>
+    <th style="width:80%">Category</th>
+    <th style="width:20%">Rank</th>
+  </tr>
+  <tr>
+    <td>Female, 19 to 35, First Class</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>Female, 36 to 60, First Class</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td>Female, 0 to 18, Second Class</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Female, 0 to 18, First Class</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>Female, 19 to 35, Second Class</td>
+    <td>5</td>
+  </tr>
+  <tr>
+    <td>Female, 36 to 60, Second Class</td>
+    <td>6</td>
+  </tr>
+  <tr>
+    <td>Male, 0 to 18, First Class</td>
+    <td>7</td>
+  </tr>
+  <tr>
+    <td>Female, 0 to 18, Third Class</td>
+    <td>8</td>
+  </tr>
+  <tr>
+    <td>Male, 0 to 18, Second Class</td>
+    <td>9</td>
+  </tr>
+  <tr>
+    <td>Female, 19 to 35, Third Class</td>
+    <td>10</td>
+  </tr>
+  <tr>
+    <td>Male, 19 to 35, First Class</td>
+    <td>11</td>
+  </tr>
+  <tr>
+    <td>Female, 36 to 60, Third Class</td>
+    <td>12</td>
+  </tr>
+  <tr>
+    <td>Male, 36 to 60, First Class</td>
+    <td>13</td>
+  </tr>
+  <tr>
+    <td>Female, 61 and Older, First Class</td>
+    <td>14</td>
+  </tr>
+  <tr>
+    <td>Male, 0 to 18, Third Class</td>
+    <td>15</td>
+  </tr>
+  <tr>
+    <td>Female, 61 and Older, Third Class</td>
+    <td>16</td>
+  </tr>
+  <tr>
+    <td>Male, 19 to 35, Third Class</td>
+    <td>17</td>
+  </tr>
+  <tr>
+    <td>Female, 61 and Older, Second Class</td>
+    <td>18</td>
+  </tr>
+  <tr>
+    <td>Male, 36 to 60, Third Class</td>
+    <td>19</td>
+  </tr>
+  <tr>
+    <td>Male, 19 to 35, Third Class</td>
+    <td>20</td>
+  </tr>
+  <tr>
+    <td>Male, 36 to 60, Second Class</td>
+    <td>21</td>
+  </tr>
+</table>
+<!------------END CONSLUSION TABLE-------->
+<br>
+There were limitations on this project as only four columns were analyzed. There are ten other columns that can be worked with when comparing to the survived column. Other limitations are the missing data values. If the missing data values can be found it will add more accuracy to the analyses.  
+</p>
 
 
 
@@ -655,6 +911,17 @@ end.rcode-->
 </div>
 </div>
 
+<script>
+var close = document.getElementsByClassName("closebtn");
+var i;
 
+for (i = 0; i < close.length; i++) {
+  close[i].onclick = function(){
+    var div = this.parentElement;
+    div.style.opacity = "0";
+    setTimeout(function(){ div.style.display = "none"; }, 600);
+  }
+}
+</script>
 </body>
 </html>
